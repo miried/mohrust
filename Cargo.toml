@@ -1,0 +1,11 @@
+[package]
+name = "omohaa-ui"
+version = "0.1.11"
+authors = [ "Michael Rieder" ]
+edition = "2018"
+
+[lib]
+crate-type = [ "cdylib" ]
+
+[dependencies]
+libc = "*"
