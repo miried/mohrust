@@ -2,6 +2,8 @@
 
 Rust implementations for game libraries running with ioq3.
 
+Currently in early stages, trying to figure out good ways for Rust to interface with unsafe C code.
+
 ## Getting Started
 
 Just run `cargo build` to get the library built.
