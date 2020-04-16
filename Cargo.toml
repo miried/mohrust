@@ -1,10 +1,11 @@
 [package]
-name = "omohaa-ui"
+name = "mohrust-ui"
 version = "0.1.11"
 authors = [ "Michael Rieder" ]
 edition = "2018"
 
 [lib]
+name = "ui"
 crate-type = [ "cdylib" ]
 
 [dependencies]
