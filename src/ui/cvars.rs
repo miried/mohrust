@@ -4,8 +4,8 @@ use super::syscalls;
 /// TODO: implement the other cvar functions
 /// Keep vmCar_t instance private .. is it even needed for our purpose?
 pub fn _register(cvar : &vmCvar_t, var_name : &str, value : &str, flags : i32) {
-    let n = syscalls::convert_str_to_cstring(var_name);
-    let v = syscalls::convert_str_to_cstring(value);
+    let n = syscalls::cstring_or_panic(var_name);
+    let v = syscalls::cstring_or_panic(value);
 
     //unsafe{syscalls::syscall(syscalls::uiImport_t::UI_CVAR_REGISTER as isize, cvar, n.as_ptr(), v.as_ptr(), flags)};
 }

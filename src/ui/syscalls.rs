@@ -1,5 +1,5 @@
 
-use libc::intptr_t;
+use libc::{intptr_t, c_char};
 use std::ffi::CString;
 
 /*
@@ -17,38 +17,36 @@ Suggestions for improvement welcome.
 
 type SyscallFn = extern "C" fn(intptr_t, ...) -> intptr_t;
 
-/// This is a dummy function, in case we get called before a valid syscallptr has arrived.
-fn dummy_syscall(_ : intptr_t) -> intptr_t {
-    0
+/// In case we get called before a valid syscallptr has arrived.
+fn uninit_syscall(_ : intptr_t) -> intptr_t {
+    panic!("UI syscall done before syscallptr was set.")
 }
 
-static DUMMY_SYSCALLPTR : fn(isize)->isize = dummy_syscall;
+static UNINIT_SYSCALLPTR : fn(isize)->isize = uninit_syscall;
 
 /// The engine will give us the syscall function pointer before we can use it.
 /// 
 /// We rely on the engine behaving correctly.
-static mut SYSCALL : SyscallFn = unsafe{std::mem::transmute(DUMMY_SYSCALLPTR)};
+static mut SYSCALL : SyscallFn = unsafe{std::mem::transmute(UNINIT_SYSCALLPTR)};
 
 /// Set the syscall function address.
 pub unsafe fn set_syscallptr(syscallptr : intptr_t) {
     SYSCALL = std::mem::transmute(syscallptr);
 }
 
-
 /* BASIC ENGINE FUNCTIONS */
 
 /// Print error message and quit the program.
 pub fn _error(text: &str) {
-    let cstr = convert_str_to_cstring(text);
-    unsafe{SYSCALL(uiImport_t::UI_ERROR as intptr_t,cstr.as_ptr())};
+    let c_text = cstring_or_panic(text);
+    unsafe{SYSCALL(uiImport_t::UI_ERROR as intptr_t,c_text.as_ptr())};
     panic!("Unrecoverable error occurred.")
 }
 
 /// Print console message.
-/// TODO: this cstring stuff could be a macro I think?
 pub fn print(text: &str) {
-    let cstr = convert_str_to_cstring(text);
-    unsafe{SYSCALL(uiImport_t::UI_PRINT as intptr_t,cstr.as_ptr())};
+    let c_text = cstring_or_panic(text);
+    unsafe{SYSCALL(uiImport_t::UI_PRINT as intptr_t,c_text.as_ptr())};
 }
 
 /// Execution time.
@@ -59,8 +57,8 @@ pub fn milliseconds() -> isize {
 
 /* HELPER FUNCTIONS */
 
-pub fn convert_str_to_cstring(input : &str) -> CString {
-    CString::new(input).expect("Could not convert String to CString.")
+pub fn cstring_or_panic(input : &str) -> CString {
+    CString::new(input).expect("Could not convert text to CString.")
 }
 
 #[repr(C)]
