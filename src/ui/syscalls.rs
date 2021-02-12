@@ -1,50 +1,59 @@
 
-use libc::{intptr_t};
+use libc::intptr_t;
 use std::ffi::CString;
 
-/* SYSCALL LOGIC */
+/*
+SYSCALL LOGIC
+
+OK, I know this is totally against everything Rust was designed for.
+But we try to be compatible to the original engine interface here.
+
+There is no usable local state to keep the syscallptr, so it is global.
+Since its lifetime is from first call to dllEntry to the end, it is
+essentially 'static lifetime.
+
+Suggestions for improvement welcome.
+*/
 
 type SyscallFn = extern "C" fn(intptr_t, ...) -> intptr_t;
 
+/// This is a dummy function, in case we get called before a valid syscallptr has arrived.
+fn dummy_syscall(_ : intptr_t) -> intptr_t {
+    0
+}
+
+static DUMMY_SYSCALLPTR : fn(isize)->isize = dummy_syscall;
+
 /// The engine will give us the syscall function pointer before we can use it.
 /// 
-/// Note that this implementation is currently not thread-safe!
-/// It follows the C implementation but should probably be using an RwLock in the future.
-static mut SYSCALL : Option<SyscallFn> = None;
+/// We rely on the engine behaving correctly.
+static mut SYSCALL : SyscallFn = unsafe{std::mem::transmute(DUMMY_SYSCALLPTR)};
 
 /// Set the syscall function address.
 pub unsafe fn set_syscallptr(syscallptr : intptr_t) {
-    SYSCALL = Some(std::mem::transmute(syscallptr));
+    SYSCALL = std::mem::transmute(syscallptr);
 }
 
-/// Get the syscall function.
-pub fn get_syscall() -> SyscallFn {
-    let sc = unsafe{SYSCALL};
-    sc.expect("SYSCALLPTR not set.")
-}
 
 /* BASIC ENGINE FUNCTIONS */
 
 /// Print error message and quit the program.
 pub fn _error(text: &str) {
-    let syscall = get_syscall();
     let cstr = convert_str_to_cstring(text);
-    syscall(uiImport_t::UI_ERROR as isize,cstr.as_ptr());
+    unsafe{SYSCALL(uiImport_t::UI_ERROR as intptr_t,cstr.as_ptr())};
     panic!("Unrecoverable error occurred.")
 }
 
 /// Print console message.
 /// TODO: this cstring stuff could be a macro I think?
 pub fn print(text: &str) {
-    let syscall = get_syscall();
     let cstr = convert_str_to_cstring(text);
-    syscall(uiImport_t::UI_PRINT as isize,cstr.as_ptr());
+    unsafe{SYSCALL(uiImport_t::UI_PRINT as intptr_t,cstr.as_ptr())};
 }
 
 /// Execution time.
 pub fn milliseconds() -> isize {
-    let syscall = get_syscall();
-    syscall(uiImport_t::UI_MILLISECONDS as isize)
+    unsafe{SYSCALL(uiImport_t::UI_MILLISECONDS as intptr_t)}
 }
 
 

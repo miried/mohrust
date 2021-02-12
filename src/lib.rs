@@ -1,44 +1,43 @@
 //extern crate libc;
 use libc::{c_int, intptr_t};
 
-mod syscalls;
-mod cvars;
-mod ui_main;
+mod ui;
 
 /// When loading the library, the engine will first call dllEntry
 /// So that we know the syscallptr to call functions from the library.
 #[no_mangle]
+#[allow(non_snake_case)]
 pub unsafe extern "C" fn dllEntry( syscallptr : intptr_t ) {
-	syscalls::set_syscallptr(syscallptr)
+	ui::syscalls::set_syscallptr(syscallptr)
 }
 
 /// This is the gateway function for the engine to trigger events in the library.
 #[no_mangle]
-#[allow(unused_variables)]
+#[allow(non_snake_case, unused_variables)]
 pub extern "C" fn vmMain( command: c_int, arg0: c_int, arg1: c_int, arg2: c_int, arg3: c_int, arg4: c_int, arg5: c_int, arg6: c_int, arg7: c_int, arg8: c_int, arg9: c_int, arg10: c_int, arg11: c_int) -> intptr_t {
 	let cmd : uiExport_t = unsafe { std::mem::transmute(command) };
 
 	let result = match cmd {
-		uiExport_t::UI_GETAPIVERSION => ui_main::UI_APIVERSION,
-		uiExport_t::UI_INIT => ui_main::init(arg0 != 0),
-		uiExport_t::UI_SHUTDOWN => ui_main::shutdown(),
-		uiExport_t::UI_KEY_EVENT => ui_main::key_event(arg0, arg1 != 0),
-		uiExport_t::UI_MOUSE_EVENT => ui_main::mouse_event(arg0, arg1),
-		uiExport_t::UI_REFRESH => ui_main::refresh(arg0),
-		uiExport_t::UI_IS_FULLSCREEN => ui_main::is_fullscreen(),
+		uiExport_t::UI_GETAPIVERSION => ui::UI_APIVERSION,
+		uiExport_t::UI_INIT => ui::init(arg0 != 0),
+		uiExport_t::UI_SHUTDOWN => ui::shutdown(),
+		uiExport_t::UI_KEY_EVENT => ui::key_event(arg0, arg1 != 0),
+		uiExport_t::UI_MOUSE_EVENT => ui::mouse_event(arg0, arg1),
+		uiExport_t::UI_REFRESH => ui::refresh(arg0),
+		uiExport_t::UI_IS_FULLSCREEN => ui::is_fullscreen(),
 		uiExport_t::UI_SET_ACTIVE_MENU => {
-			let menu : ui_main::uiMenuCommand_t = unsafe { std::mem::transmute(arg0) };
-			ui_main::set_active_menu(menu)
+			let menu : ui::uiMenuCommand_t = unsafe { std::mem::transmute(arg0) };
+			ui::set_active_menu(menu)
 		},
-		uiExport_t::UI_CONSOLE_COMMAND => ui_main::console_command(arg0),
-		uiExport_t::UI_DRAW_CONNECT_SCREEN => ui_main::draw_connect_screen(arg0 != 0),
-		uiExport_t::UI_HASUNIQUECDKEY => ui_main::has_unique_cdkey(),
+		uiExport_t::UI_CONSOLE_COMMAND => ui::console_command(arg0),
+		uiExport_t::UI_DRAW_CONNECT_SCREEN => ui::draw_connect_screen(arg0 != 0),
+		uiExport_t::UI_HASUNIQUECDKEY => ui::has_unique_cdkey(),
 	};
 	result as intptr_t
 }
 
 #[repr(C)]
-#[allow(non_camel_case_types,dead_code)]
+#[allow(non_camel_case_types, dead_code)]
 enum uiExport_t {
 	UI_GETAPIVERSION = 0,	// system reserved
 

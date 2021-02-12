@@ -1,11 +1,11 @@
-use crate::syscalls;
-// use crate::cvars;
+pub mod syscalls;
+pub mod cvars;
 
 pub const UI_APIVERSION : i32 = 6;
 
 pub fn init(_in_game_load : bool) -> i32 {
 	let a = syscalls::milliseconds();
-	let b = format!("1UI_INIT at {}ms.\n", a);
+	let b = format!("Rusty UI_INIT at {}ms.\n", a);
 	syscalls::print(&b);
 
 	// let cvar : cvars::vmCvar_t = Default::default();

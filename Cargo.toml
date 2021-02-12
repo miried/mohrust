@@ -1,5 +1,5 @@
 [package]
-name = "mohrust-ui"
+name = "mohui"
 version = "0.1.11"
 authors = [ "Michael Rieder" ]
 edition = "2018"
