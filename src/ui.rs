@@ -1,15 +1,13 @@
-pub mod syscalls;
-pub mod cvars;
+use crate::client as cl;
 
 pub const UI_APIVERSION : i32 = 6;
 
 pub fn init(_in_game_load : bool) -> i32 {
-	let a = syscalls::milliseconds();
+	let a = cl::util::milliseconds();
 	let b = format!("Rusty UI_INIT at {}ms.\n", a);
-	syscalls::print(&b);
+	cl::util::print(&b);
 
-	// let cvar : cvars::vmCvar_t = Default::default();
-	// cvars::register(&cvar, "ui_wombat", "0", 0);
+	cl::cvar::create("ui_wombat", "0", 0);
 
 	0
 }
@@ -33,7 +31,7 @@ pub fn is_fullscreen() -> i32 {
 
 #[repr(C)]
 #[allow(non_camel_case_types, dead_code)]
-pub enum uiMenuCommand_t {
+enum uiMenuCommand_t {
 	UIMENU_NONE,
 	UIMENU_MAIN,
 	UIMENU_INGAME,
@@ -43,7 +41,8 @@ pub enum uiMenuCommand_t {
 	UIMENU_POSTGAME
 }
 
-pub fn set_active_menu(_menu : uiMenuCommand_t) -> i32 {
+pub fn set_active_menu(menu : i32) -> i32 {
+	let _menu_command : uiMenuCommand_t = unsafe { std::mem::transmute(menu) };
 	0
 }
 

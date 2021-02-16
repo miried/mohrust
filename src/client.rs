@@ -1,5 +1,7 @@
+pub mod util;
+pub mod cvar;
 
-use libc::{intptr_t, c_char};
+use libc::intptr_t;
 use std::ffi::CString;
 
 /*
@@ -27,39 +29,25 @@ static UNINIT_SYSCALLPTR : fn(isize)->isize = uninit_syscall;
 /// The engine will give us the syscall function pointer before we can use it.
 /// 
 /// We rely on the engine behaving correctly.
-static mut SYSCALL : SyscallFn = unsafe{std::mem::transmute(UNINIT_SYSCALLPTR)};
+pub static mut SYSCALL : SyscallFn = unsafe{std::mem::transmute(UNINIT_SYSCALLPTR)};
 
 /// Set the syscall function address.
 pub unsafe fn set_syscallptr(syscallptr : intptr_t) {
     SYSCALL = std::mem::transmute(syscallptr);
 }
 
-/* BASIC ENGINE FUNCTIONS */
-
-/// Print error message and quit the program.
-pub fn _error(text: &str) {
-    let c_text = cstring_or_panic(text);
-    unsafe{SYSCALL(uiImport_t::UI_ERROR as intptr_t,c_text.as_ptr())};
-    panic!("Unrecoverable error occurred.")
-}
-
-/// Print console message.
-pub fn print(text: &str) {
-    let c_text = cstring_or_panic(text);
-    unsafe{SYSCALL(uiImport_t::UI_PRINT as intptr_t,c_text.as_ptr())};
-}
-
-/// Execution time.
-pub fn milliseconds() -> isize {
-    unsafe{SYSCALL(uiImport_t::UI_MILLISECONDS as intptr_t)}
-}
-
-
 /* HELPER FUNCTIONS */
 
-pub fn cstring_or_panic(input : &str) -> CString {
-    CString::new(input).expect("Could not convert text to CString.")
+/// This is a helper to get a pointer to a C string.
+///
+/// Caller needs to take explicit ownership of the CString as well,
+/// Otherwise it will be dropped when out of scope.
+pub fn create_cstringptr(input : &str) -> (CString, *const i8) {
+    let cstring = CString::new(input).expect("Could not convert text to CString.");
+    let cstring_ptr = cstring.as_ptr();
+    (cstring, cstring_ptr)
 }
+
 
 #[repr(C)]
 #[allow(non_camel_case_types, dead_code)]
