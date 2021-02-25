@@ -1,6 +1,6 @@
 use crate::client as cl;
 use libc::intptr_t;
-use std::ffi::CString;
+use std::ffi::CStr;
 
 use cl::uiImport_t;
 
@@ -31,16 +31,12 @@ pub fn _variable_value(var_name : &str) -> f32 {
     unsafe{ fi.f }
 }
 
-/// TODO: The conversion from buffer into a String is not working.
 pub fn _variable_string_buffer(var_name : &str) -> String {
-    let mut buffer = [0 as u8; MAX_CVAR_VALUE_STRING];
+    let mut buffer = [0 as i8; MAX_CVAR_VALUE_STRING];
     let (_c_var_name, c_var_name_ptr) = cl::create_cstringptr(var_name);
     unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_VARIABLESTRINGBUFFER as intptr_t, c_var_name_ptr, buffer.as_mut_ptr(), MAX_CVAR_VALUE_STRING)};
-    let result = CString::new(buffer);
-    match result {
-        Ok(cstr) => cstr.into_string().expect("Conversion failed."),
-        Err(e) => {println!("CStr conversion failed. {}", e); String::new()}
-    }
+    let result = unsafe{CStr::from_ptr(buffer.as_ptr())};
+    result.to_str().expect("CStr conversion failed.").to_owned()
 }
 
 bitflags! {

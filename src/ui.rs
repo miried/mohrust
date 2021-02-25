@@ -22,7 +22,7 @@ pub fn init(_in_game_load : bool) -> i32 {
 
 	set_menuconfig(menu::MenuConfig::init());
 
-	ui_println!("UI init completed {}.", cvar::_variable_value("ui_wombat"));
+	ui_println!("UI init completed.");
 	0
 }
 
