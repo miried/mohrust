@@ -1,5 +1,6 @@
 pub mod util;
 pub mod cvar;
+pub mod fs;
 
 use libc::intptr_t;
 use std::ffi::CString;

@@ -33,9 +33,9 @@ pub fn _variable_value(var_name : &str) -> f32 {
 
 /// TODO: The conversion from buffer into a String is not working.
 pub fn _variable_string_buffer(var_name : &str) -> String {
-    let buffer = [0 as u8; MAX_CVAR_VALUE_STRING];
+    let mut buffer = [0 as u8; MAX_CVAR_VALUE_STRING];
     let (_c_var_name, c_var_name_ptr) = cl::create_cstringptr(var_name);
-    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_VARIABLESTRINGBUFFER as intptr_t, c_var_name_ptr, &buffer, MAX_CVAR_VALUE_STRING)};
+    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_VARIABLESTRINGBUFFER as intptr_t, c_var_name_ptr, buffer.as_mut_ptr(), MAX_CVAR_VALUE_STRING)};
     let result = CString::new(buffer);
     match result {
         Ok(cstr) => cstr.into_string().expect("Conversion failed."),

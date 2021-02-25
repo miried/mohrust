@@ -1,22 +1,32 @@
+use std::convert::TryFrom;
+
 use crate::ui_println;
-use once_cell::sync::OnceCell;
-use std::sync::Mutex;
+use crate::client::fs;
 
-static MENUSTACK : OnceCell<Mutex<Vec<u32>>> = OnceCell::new();
-
-pub fn init () {
-    let result = MENUSTACK.set(Mutex::new(Vec::new()));
-    result.expect("Could not initialize MENUSTACK, already done before.");
+#[derive(Debug)]
+pub struct MenuConfig {
+    menustack : Vec<u32>,
 }
 
-fn push_menu(name : &str) {
-    MENUSTACK.get().unwrap().lock().unwrap().push(1);
-    ui_println!("Loaded menu {}", name);
-}
+impl MenuConfig {
 
-pub fn set_main_menu() -> i32 {
-    if MENUSTACK.get().unwrap().lock().unwrap().is_empty() {
-        push_menu("main");
+    pub fn init () -> MenuConfig {
+        MenuConfig {
+            menustack : Vec::new(),
+        }
     }
-    0
+    
+    fn push_menu(&mut self, name : &str) {
+        let filename = format!("ui/{}.urc", name);
+        let _f = fs::FileHandle::try_from(&filename).unwrap();
+        self.menustack.push(1);
+        ui_println!("Loaded menu {}", name);
+    }
+    
+    pub fn set_main_menu(&mut self) -> i32 {
+        if self.menustack.is_empty() {
+            self.push_menu("main");
+        }
+        0
+    }    
 }

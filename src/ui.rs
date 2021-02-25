@@ -1,20 +1,26 @@
+use std::sync::Mutex;
+use menu::MenuConfig;
+use once_cell::sync::OnceCell;
+
 mod menu;
 
 use crate::client::cvar;
 use crate::ui_println;
 
+
 pub const UI_APIVERSION : i32 = 6;
+
+static MENUCONFIG : OnceCell<Mutex<MenuConfig>> = OnceCell::new();
+
+fn set_menuconfig(mc : MenuConfig) {
+	let result = MENUCONFIG.set(Mutex::new(mc));
+	result.expect("Could not initialize MENUCONFIG, already done before.");
+}
 
 pub fn init(_in_game_load : bool) -> i32 {
 	cvar::create("ui_wombat", "0", 0);
-	
-	// get glconfig
 
-	// Register font
-
-	menu::init();
-
-	// Register Media
+	set_menuconfig(menu::MenuConfig::init());
 
 	ui_println!("UI init completed {}.", cvar::_variable_value("ui_wombat"));
 	0
@@ -56,7 +62,7 @@ pub fn set_active_menu(menu : i32) -> i32 {
 	let menu_command : uiMenuCommand_t = unsafe { std::mem::transmute(menu) };
 	match menu_command {
 		uiMenuCommand_t::UIMENU_NONE => 0,
-		uiMenuCommand_t::UIMENU_MAIN => menu::set_main_menu(),
+		uiMenuCommand_t::UIMENU_MAIN => MENUCONFIG.get().unwrap().lock().unwrap().set_main_menu(),
 		_ => -1
 	}
 }
