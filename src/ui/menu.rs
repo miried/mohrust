@@ -18,11 +18,10 @@ impl MenuConfig {
     
     fn push_menu(&mut self, name : &str) {
         let filename = format!("ui/{}.urc", name);
-        let f = fs::FileHandle::try_from(&filename).unwrap();
+        let file = fs::FileHandle::try_from(&filename).unwrap();
         self.menustack.push(1);
         ui_println!("Loaded menu {}", name);
-        let test = f.read();
-        ui_println!("{}{}{}{}{}", test[0] as char, test[1] as char, test[2] as char, test[3] as char, test[4] as char);
+        let _urc_string = file.readt();
     }
     
     pub fn set_main_menu(&mut self) -> i32 {

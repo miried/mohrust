@@ -1,4 +1,5 @@
 use std::convert::{TryFrom, TryInto};
+use std::ffi::CStr;
 
 use crate::client as cl;
 use libc::intptr_t;
@@ -36,15 +37,17 @@ impl Drop for FileHandle {
 }
 
 impl FileHandle {
-    pub fn read(&self) -> Vec<u8> {
+    pub fn read(&self) -> Vec<i8> {
         let mut buffer = Vec::with_capacity(self.length);
         buffer.resize(self.length, 0);
         read(buffer.as_mut_ptr(), self.length, self.file_handle);
         buffer
     }
 
-    pub fn _readt(&self) {
-        self.read();
+    pub fn readt(&self) -> String {
+        let buffer = self.read();
+        let result = unsafe{CStr::from_ptr(buffer.as_ptr())};
+        result.to_str().expect("CStr conversion failed.").to_owned()
     }
 }
 
@@ -78,6 +81,6 @@ fn fclose_file(f : fileHandle_t) {
     unsafe{cl::SYSCALL(uiImport_t::UI_FS_FCLOSEFILE as intptr_t, f)};
 }
 
-fn read(buffer : *mut u8, len : usize, f : fileHandle_t) {
+fn read(buffer : *mut i8, len : usize, f : fileHandle_t) {
     unsafe{cl::SYSCALL(uiImport_t::UI_FS_READ as intptr_t, buffer, len, f)};
 }
