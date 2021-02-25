@@ -1,20 +1,22 @@
 //extern crate libc;
 use libc::{c_int, intptr_t};
+#[macro_use]
+extern crate bitflags;
 
 mod client;
 mod ui;
 
 /// When loading the library, the engine will first call dllEntry
 /// So that we know the syscallptr to call functions from the library.
-#[no_mangle]
 #[allow(non_snake_case)]
+#[no_mangle]
 pub unsafe extern "C" fn dllEntry( syscallptr : intptr_t ) {
 	client::set_syscallptr(syscallptr)
 }
 
 /// This is the gateway function for the engine to trigger events in the library.
-#[no_mangle]
 #[allow(non_snake_case, unused_variables)]
+#[no_mangle]
 pub extern "C" fn vmMain( command: c_int, arg0: c_int, arg1: c_int, arg2: c_int, arg3: c_int, arg4: c_int, arg5: c_int, arg6: c_int, arg7: c_int, arg8: c_int, arg9: c_int, arg10: c_int, arg11: c_int) -> intptr_t {
 	let cmd : uiExport_t = unsafe { std::mem::transmute(command) };
 
@@ -34,8 +36,8 @@ pub extern "C" fn vmMain( command: c_int, arg0: c_int, arg1: c_int, arg2: c_int,
 	result as intptr_t
 }
 
-#[repr(C)]
 #[allow(non_camel_case_types, dead_code)]
+#[repr(C)]
 enum uiExport_t {
 	UI_GETAPIVERSION = 0,	// system reserved
 

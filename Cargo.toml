@@ -10,3 +10,5 @@ crate-type = [ "cdylib" ]
 
 [dependencies]
 libc = "*"
+bitflags = "*"
+once_cell = "*"

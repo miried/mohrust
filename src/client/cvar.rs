@@ -1,5 +1,6 @@
 use crate::client as cl;
 use libc::intptr_t;
+use std::ffi::CString;
 
 use cl::uiImport_t;
 
@@ -28,6 +29,34 @@ pub fn _variable_value(var_name : &str) -> f32 {
     let value = unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_SET as intptr_t, c_var_name_ptr)};
     let fi = floatint_t { i : value as i32 };
     unsafe{ fi.f }
+}
+
+/// TODO: The conversion from buffer into a String is not working.
+pub fn _variable_string_buffer(var_name : &str) -> String {
+    let buffer = [0 as u8; MAX_CVAR_VALUE_STRING];
+    let (_c_var_name, c_var_name_ptr) = cl::create_cstringptr(var_name);
+    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_VARIABLESTRINGBUFFER as intptr_t, c_var_name_ptr, &buffer, MAX_CVAR_VALUE_STRING)};
+    let result = CString::new(buffer);
+    match result {
+        Ok(cstr) => cstr.into_string().expect("Conversion failed."),
+        Err(e) => {println!("CStr conversion failed. {}", e); String::new()}
+    }
+}
+
+bitflags! {
+    struct CvarFlags: u32 {
+        const ARCHIVE =      0b00000000001;
+        const USERINFO =     0b00000000010;
+        const SERVERINFO =   0b00000000100;
+        const SYSTEMINFO =   0b00000001000;
+        const INIT =         0b00000010000;
+        const LATCH =        0b00000100000;
+        const ROM =          0b00001000000;
+        const USER_CREATED = 0b00010000000;
+        const TEMP =         0b00100000000;
+        const CHEAT =        0b01000000000;
+        const NORESTART =    0b10000000000;
+    }
 }
 
 /* CVAR definitions */

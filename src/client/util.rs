@@ -17,8 +17,30 @@ pub fn print(text: &str) {
     unsafe{cl::SYSCALL(uiImport_t::UI_PRINT as intptr_t,c_text_ptr)};
 }
 
+/// Print console message line.
+pub fn println(text: &str) {
+    let text_line = format!("{}\n", text);
+    print(&text_line);
+}
+
+#[macro_export]
+macro_rules! ui_print {
+    ($($arg:tt)*) => {{
+        let res = format!($($arg)*);
+        $crate::client::util::print(&res);
+    }}
+}
+
+#[macro_export]
+macro_rules! ui_println {
+    ($($arg:tt)*) => {{
+        let res = format!($($arg)*);
+        $crate::client::util::println(&res);
+    }}
+}
+
 /// Execution time.
-pub fn milliseconds() -> isize {
+pub fn _milliseconds() -> isize {
     unsafe{cl::SYSCALL(uiImport_t::UI_MILLISECONDS as intptr_t)}
 }
 

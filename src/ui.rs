@@ -1,14 +1,22 @@
-use crate::client as cl;
+mod menu;
+
+use crate::client::cvar;
+use crate::ui_println;
 
 pub const UI_APIVERSION : i32 = 6;
 
 pub fn init(_in_game_load : bool) -> i32 {
-	let a = cl::util::milliseconds();
-	let b = format!("Rusty UI_INIT at {}ms.\n", a);
-	cl::util::print(&b);
+	cvar::create("ui_wombat", "0", 0);
+	
+	// get glconfig
 
-	cl::cvar::create("ui_wombat", "0", 0);
+	// Register font
 
+	menu::init();
+
+	// Register Media
+
+	ui_println!("UI init completed {}.", cvar::_variable_value("ui_wombat"));
 	0
 }
 
@@ -19,18 +27,21 @@ pub fn shutdown() -> i32 {
 pub fn key_event(_key : i32, _down : bool) -> i32 {
 	0
 }
+
 pub fn mouse_event(_x : i32, _y : i32) -> i32 {
 	0
 }
+
 pub fn refresh(_realtime : i32) -> i32 {
 	0
 }
+
 pub fn is_fullscreen() -> i32 {
 	0
 }
 
-#[repr(C)]
 #[allow(non_camel_case_types, dead_code)]
+#[repr(C)]
 enum uiMenuCommand_t {
 	UIMENU_NONE,
 	UIMENU_MAIN,
@@ -42,8 +53,12 @@ enum uiMenuCommand_t {
 }
 
 pub fn set_active_menu(menu : i32) -> i32 {
-	let _menu_command : uiMenuCommand_t = unsafe { std::mem::transmute(menu) };
-	0
+	let menu_command : uiMenuCommand_t = unsafe { std::mem::transmute(menu) };
+	match menu_command {
+		uiMenuCommand_t::UIMENU_NONE => 0,
+		uiMenuCommand_t::UIMENU_MAIN => menu::set_main_menu(),
+		_ => -1
+	}
 }
 
 pub fn console_command(_realtime : i32) -> i32 {
