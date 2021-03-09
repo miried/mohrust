@@ -11,14 +11,16 @@ Just run `cargo build` to get the library built.
 ### Prerequisites
 
 ```
-openmohaa
+ioquake3
 ```
-See [openmohaa](https://github.com/openmoh/openmohaa) for further instructions.
+See [ioquake3](https://github.com/ioquake/ioq3) for further instructions. You don't need to build the game libraries, the standalone client is enough.
+
+It also expects the game files from MOHAA in the `main` directory.
 
 
 ### Installing
 
-Currently, must be done manually. Copy the built shared library to the game's `main` folder.
+Currently, must be done manually. Copy the built shared library to the game's `main` folder so they are found.
 
 ## Built With
 
