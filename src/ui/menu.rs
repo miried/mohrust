@@ -1,31 +1,57 @@
-use std::convert::TryFrom;
+use std::{collections::HashMap, convert::TryFrom};
 
 use crate::ui_println;
 use crate::client::fs;
 
+use pest::Parser;
+
+#[derive(Parser)]
+#[grammar = "grammars/urc.pest"]
+pub struct URCParser;
+
+#[derive(Debug)]
+struct Menu {
+    name : String,
+}
 #[derive(Debug)]
 pub struct MenuConfig {
-    menustack : Vec<u32>,
+    parsed_menus : HashMap<String, Menu>,
+    active_menus : Vec<String>,
 }
 
 impl MenuConfig {
 
     pub fn init () -> MenuConfig {
         MenuConfig {
-            menustack : Vec::new(),
+            parsed_menus : HashMap::new(),
+            active_menus : Vec::new(),
         }
     }
     
     fn push_menu(&mut self, name : &str) {
-        let filename = format!("ui/{}.urc", name);
-        let file = fs::FileHandle::try_from(&filename).unwrap();
-        self.menustack.push(1);
-        ui_println!("Loaded menu {}", name);
-        let _urc_string = file.readt();
+        let saved = self.parsed_menus.get(name);
+        
+        if saved.is_none() {
+            let filename = format!("ui/{}.urc", name);
+            let file = fs::FileHandle::try_from(&filename).unwrap();
+            let urc_string = file.readt();
+
+            let file_parse = URCParser::parse(Rule::file, &urc_string);
+            ui_println!("{:?}", file_parse);
+
+            let menu = Menu {
+                name : name.to_owned(),
+            };
+            self.parsed_menus.insert(name.to_owned(), menu);
+        };
+
+        
+        self.active_menus.push(name.to_owned());
+        ui_println!("Loaded menus:\n{:?}", self.active_menus);
     }
     
     pub fn set_main_menu(&mut self) -> i32 {
-        if self.menustack.is_empty() {
+        if self.active_menus.is_empty() {
             self.push_menu("main");
         }
         0

@@ -1,7 +1,10 @@
-//extern crate libc;
+extern crate libc;
 use libc::{c_int, intptr_t};
 #[macro_use]
 extern crate bitflags;
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
 
 mod client;
 mod ui;

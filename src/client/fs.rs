@@ -47,7 +47,9 @@ impl FileHandle {
     pub fn readt(&self) -> String {
         let buffer = self.read();
         let result = unsafe{CStr::from_ptr(buffer.as_ptr())};
-        result.to_str().expect("CStr conversion failed.").to_owned()
+        let converted = result.to_str().expect("CStr conversion failed.");
+        //String::from(converted)
+        converted.to_owned()
     }
 }
 

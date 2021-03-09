@@ -12,3 +12,6 @@ crate-type = [ "cdylib" ]
 libc = "*"
 bitflags = "*"
 once_cell = "*"
+pest = "*"
+pest_derive = "*"
+
