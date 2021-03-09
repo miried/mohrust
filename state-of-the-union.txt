@@ -5,15 +5,6 @@ INFO
 
 HIGH:
 
-- Understand modules, crates, etc (e.g. difference mod and use)
-
-- solve CString business, maybe use macros to have a nice printing mechanism (compare https://os.phil-opp.com/vga-text-mode/)
-
-
-
-LOW:
-
-- Syscallptr as static mut is unsafe (would be better with RwLock but initialisation is stupid)
-
-- Can we replace global state (static mut) with something better, like an instance of something?}
+- URC parsing logic.
+- Interpreter for parsed menus.
 
