@@ -16,7 +16,7 @@ impl TryFrom<&String> for FileHandle {
 
     fn try_from(value : &String) -> Result<Self, Self::Error> {
         let mut file_handle : fileHandle_t = 0;
-        let length = fopen_file(value, &mut file_handle, fsMode_t::FS_READ);
+        let length = cl_fopen_file(value, &mut file_handle, fsMode_t::FS_READ);
         match file_handle {
             0 => Err("Could not open file."),
             _ => {
@@ -32,23 +32,27 @@ impl TryFrom<&String> for FileHandle {
 
 impl Drop for FileHandle {
     fn drop(&mut self) {
-        fclose_file(self.file_handle);
+        cl_fclose_file(self.file_handle);
     }
 }
 
 impl FileHandle {
-    pub fn read(&self) -> Vec<i8> {
-        let mut buffer = Vec::with_capacity(self.length);
+    /// The returned buffer has the size of the file,
+    /// but it has capacity for one more byte, in case
+    /// we want to null-terminate it. 
+    pub fn read(&self) -> Vec<u8> {
+        let mut buffer = Vec::with_capacity(self.length+1);
         buffer.resize(self.length, 0);
-        read(buffer.as_mut_ptr(), self.length, self.file_handle);
+        cl_read(buffer.as_mut_ptr(), self.length, self.file_handle);
         buffer
     }
 
-    pub fn readt(&self) -> String {
-        let buffer = self.read();
-        let result = unsafe{CStr::from_ptr(buffer.as_ptr())};
-        let converted = result.to_str().expect("CStr conversion failed.");
-        //String::from(converted)
+    pub fn read_text(&self) -> String {
+        let mut buffer = self.read();
+        // we need a 0-byte at the end of the file buffer
+        buffer.resize(self.length+1, 0);
+        let cstr = CStr::from_bytes_with_nul(&buffer).expect("CStr conversion failed.");
+        let converted = cstr.to_str().expect("str conversion failed.");
         converted.to_owned()
     }
 }
@@ -73,16 +77,16 @@ enum fsOrigin_t {
     FS_SEEK_SET
 }
 
-fn fopen_file(qpath : &str, f : &mut fileHandle_t, mode : fsMode_t) -> usize {  
+fn cl_fopen_file(qpath : &str, f : &mut fileHandle_t, mode : fsMode_t) -> usize {  
     let (_c_qpath, c_qpath_ptr) = cl::create_cstringptr(qpath);
     let length = unsafe{cl::SYSCALL(uiImport_t::UI_FS_FOPENFILE as intptr_t, c_qpath_ptr, f, mode)};
     length.try_into().expect("Returned file length negative.")
 }
 
-fn fclose_file(f : fileHandle_t) {
+fn cl_fclose_file(f : fileHandle_t) {
     unsafe{cl::SYSCALL(uiImport_t::UI_FS_FCLOSEFILE as intptr_t, f)};
 }
 
-fn read(buffer : *mut i8, len : usize, f : fileHandle_t) {
+fn cl_read(buffer : *mut u8, len : usize, f : fileHandle_t) {
     unsafe{cl::SYSCALL(uiImport_t::UI_FS_READ as intptr_t, buffer, len, f)};
 }
