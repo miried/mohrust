@@ -3,6 +3,7 @@ use menu::MenuConfig;
 use once_cell::sync::OnceCell;
 
 mod menu;
+mod urc;
 
 use crate::client::cvar;
 use crate::ui_println;
@@ -15,6 +16,7 @@ static MENUCONFIG : OnceCell<Mutex<MenuConfig>> = OnceCell::new();
 fn set_menuconfig(mc : MenuConfig) {
 	let result = MENUCONFIG.set(Mutex::new(mc));
 	result.expect("Could not initialize MENUCONFIG, already done before.");
+	// TODO: this crashes on vid_restart. we need a proper shutdown sequence, to gracefully handle a restart.
 }
 
 pub fn init(_in_game_load : bool) -> i32 {

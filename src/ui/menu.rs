@@ -3,11 +3,7 @@ use std::{collections::HashMap, convert::TryFrom};
 use crate::ui_println;
 use crate::client::fs;
 
-use pest::Parser;
-
-#[derive(Parser)]
-#[grammar = "grammars/urc.pest"]
-pub struct URCParser;
+use super::urc;
 
 #[derive(Debug)]
 struct Menu {
@@ -34,10 +30,9 @@ impl MenuConfig {
         if saved.is_none() {
             let filename = format!("ui/{}.urc", name);
             let file = fs::FileHandle::try_from(&filename).unwrap();
-            let urc_string = file.readt();
+            let urc_string = file.read_text();
 
-            let file_parse = URCParser::parse(Rule::file, &urc_string);
-            ui_println!("{:?}", file_parse);
+            let _file_parse = urc::parse_it( &urc_string );
 
             let menu = Menu {
                 name : name.to_owned(),
