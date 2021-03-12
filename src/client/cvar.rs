@@ -13,29 +13,33 @@ union floatint_t {
 }
 
 pub fn _set(var_name : &str, value : &str) {
-    let (_c_var_name, c_var_name_ptr) = cl::create_cstringptr(var_name);
-    let (_c_value, c_value_ptr) = cl::create_cstringptr(value);
-    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_SET as intptr_t, c_var_name_ptr, c_value_ptr)};
+    let c_var_name = cl::create_cstring(var_name);
+    let c_value = cl::create_cstring(value);
+    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_SET as intptr_t, c_var_name.as_ptr(), c_value.as_ptr())};
 }
 
 pub fn create(var_name : &str, value : &str, flags : i32) {
-    let (_c_var_name, c_var_name_ptr) = cl::create_cstringptr(var_name);
-    let (_c_value, c_value_ptr) = cl::create_cstringptr(value);
-    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_CREATE as intptr_t, c_var_name_ptr, c_value_ptr, flags)};
+    let c_var_name = cl::create_cstring(var_name);
+    let c_value = cl::create_cstring(value);
+    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_CREATE as intptr_t, c_var_name.as_ptr(), c_value.as_ptr(), flags)};
 }
 
 pub fn _variable_value(var_name : &str) -> f32 {
-    let (_c_var_name, c_var_name_ptr) = cl::create_cstringptr(var_name);
-    let value = unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_SET as intptr_t, c_var_name_ptr)};
+    let c_var_name = cl::create_cstring(var_name);
+    let value = unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_SET as intptr_t, c_var_name.as_ptr())};
     let fi = floatint_t { i : value as i32 };
     unsafe{ fi.f }
 }
 
 pub fn _variable_string_buffer(var_name : &str) -> String {
     let mut buffer = [0 as i8; MAX_CVAR_VALUE_STRING];
-    let (_c_var_name, c_var_name_ptr) = cl::create_cstringptr(var_name);
-    unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_VARIABLESTRINGBUFFER as intptr_t, c_var_name_ptr, buffer.as_mut_ptr(), MAX_CVAR_VALUE_STRING)};
-    let result = unsafe{CStr::from_ptr(buffer.as_ptr())};
+    let c_var_name = cl::create_cstring(var_name);
+
+    let result = unsafe {
+        cl::SYSCALL(uiImport_t::UI_CVAR_VARIABLESTRINGBUFFER as intptr_t, c_var_name.as_ptr(), buffer.as_mut_ptr(), MAX_CVAR_VALUE_STRING);
+        CStr::from_ptr(buffer.as_ptr())
+    };
+    
     result.to_str().expect("CStr conversion failed.").to_owned()
 }
 

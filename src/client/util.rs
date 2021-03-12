@@ -6,15 +6,15 @@ use cl::uiImport_t;
 
 /// Print error message and quit the program.
 pub fn _error(text: &str) {
-    let (_c_text, c_text_ptr) = cl::create_cstringptr(text);
-    unsafe{cl::SYSCALL(uiImport_t::UI_ERROR as intptr_t,c_text_ptr)};
+    let c_text = cl::create_cstring(text);
+    unsafe{cl::SYSCALL(uiImport_t::UI_ERROR as intptr_t,c_text.as_ptr())};
     panic!("Unrecoverable error occurred.")
 }
 
 /// Print console message.
 pub fn print(text: &str) {
-    let (_c_text, c_text_ptr) = cl::create_cstringptr(text);
-    unsafe{cl::SYSCALL(uiImport_t::UI_PRINT as intptr_t,c_text_ptr)};
+    let c_text = cl::create_cstring(text);
+    unsafe{cl::SYSCALL(uiImport_t::UI_PRINT as intptr_t,c_text.as_ptr())};
 }
 
 /// Print console message line.

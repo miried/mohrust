@@ -1,5 +1,4 @@
 use std::convert::{TryFrom, TryInto};
-use std::ffi::CStr;
 
 use crate::client as cl;
 use libc::intptr_t;
@@ -37,23 +36,13 @@ impl Drop for FileHandle {
 }
 
 impl FileHandle {
-    /// The returned buffer has the size of the file,
-    /// but it has capacity for one more byte, in case
-    /// we want to null-terminate it. 
     pub fn read(&self) -> Vec<u8> {
-        let mut buffer = Vec::with_capacity(self.length+1);
-        buffer.resize(self.length, 0);
-        cl_read(buffer.as_mut_ptr(), self.length, self.file_handle);
-        buffer
+        cl_read(self.length, self.file_handle)
     }
 
     pub fn read_text(&self) -> String {
-        let mut buffer = self.read();
-        // we need a 0-byte at the end of the file buffer
-        buffer.resize(self.length+1, 0);
-        let cstr = CStr::from_bytes_with_nul(&buffer).expect("CStr conversion failed.");
-        let converted = cstr.to_str().expect("str conversion failed.");
-        converted.to_owned()
+        let buffer = self.read();
+        String::from_utf8(buffer).expect("String conversion from file failed.")
     }
 }
 
@@ -78,8 +67,8 @@ enum fsOrigin_t {
 }
 
 fn cl_fopen_file(qpath : &str, f : &mut fileHandle_t, mode : fsMode_t) -> usize {  
-    let (_c_qpath, c_qpath_ptr) = cl::create_cstringptr(qpath);
-    let length = unsafe{cl::SYSCALL(uiImport_t::UI_FS_FOPENFILE as intptr_t, c_qpath_ptr, f, mode)};
+    let c_qpath = cl::create_cstring(qpath);
+    let length = unsafe{cl::SYSCALL(uiImport_t::UI_FS_FOPENFILE as intptr_t, c_qpath.as_ptr(), f, mode)};
     length.try_into().expect("Returned file length negative.")
 }
 
@@ -87,6 +76,13 @@ fn cl_fclose_file(f : fileHandle_t) {
     unsafe{cl::SYSCALL(uiImport_t::UI_FS_FCLOSEFILE as intptr_t, f)};
 }
 
-fn cl_read(buffer : *mut u8, len : usize, f : fileHandle_t) {
-    unsafe{cl::SYSCALL(uiImport_t::UI_FS_READ as intptr_t, buffer, len, f)};
+fn cl_read(len : usize, f : fileHandle_t) -> Vec<u8> {
+    let mut buffer = Vec::with_capacity(len);
+
+    unsafe{
+        cl::SYSCALL(uiImport_t::UI_FS_READ as intptr_t, buffer.as_mut_ptr(), len, f);
+        // FIXME: the engine does not tell us how many bytes were actually read!
+        buffer.set_len(len);
+    }
+    buffer
 }

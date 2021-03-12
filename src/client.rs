@@ -40,13 +40,8 @@ pub unsafe fn set_syscallptr(syscallptr : intptr_t) {
 /* HELPER FUNCTIONS */
 
 /// This is a helper to get a pointer to a C string.
-///
-/// Caller needs to take explicit ownership of the CString as well,
-/// Otherwise it will be dropped when out of scope.
-pub fn create_cstringptr(input : &str) -> (CString, *const i8) {
-    let cstring = CString::new(input).expect("Could not convert text to CString.");
-    let cstring_ptr = cstring.as_ptr();
-    (cstring, cstring_ptr)
+pub fn create_cstring(input : &str) -> CString {
+    CString::new(input).expect("Could not convert text to CString.")
 }
 
 
