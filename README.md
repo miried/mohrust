@@ -1,4 +1,4 @@
-![Build](https://github.com/miried/mohrust/workflows/Build/badge.svg)
+![Build](https://github.com/miried/mohrust/workflows/Rust/badge.svg)
 # mohrust
 
 Rust implementations for game libraries running with ioq3.
