@@ -32,7 +32,7 @@ impl MenuConfig {
             let file = fs::FileHandle::try_from(&filename).unwrap();
             let urc_string = file.read_text();
 
-            let _file_parse = urc::parse_it( &urc_string );
+            let _file_parse = urc::parse_urc( &urc_string );
 
             let menu = Menu {
                 name : name.to_owned(),
