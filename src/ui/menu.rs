@@ -6,22 +6,23 @@ use crate::client::fs;
 use super::urc;
 
 #[derive(Debug)]
-struct Menu {
-    name : String,
-}
-#[derive(Debug)]
-pub struct MenuConfig {
-    parsed_menus : HashMap<String, Menu>,
+pub struct UrcMenus {
+    parsed_menus : HashMap<String, urc::UrcResource>,
     active_menus : Vec<String>,
 }
 
-impl MenuConfig {
+impl UrcMenus {
 
-    pub fn init () -> MenuConfig {
-        MenuConfig {
+    pub fn new () -> Self {
+        Self {
             parsed_menus : HashMap::new(),
             active_menus : Vec::new(),
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.active_menus.clear();
+        self.parsed_menus.clear();
     }
     
     fn push_menu(&mut self, name : &str) {
@@ -32,14 +33,10 @@ impl MenuConfig {
             let file = fs::FileHandle::try_from(&filename).unwrap();
             let urc_string = file.read_text();
 
-            let _file_parse = urc::parse_urc( &urc_string );
+            let menu = urc::UrcResource::parse_urc( &urc_string );
 
-            let menu = Menu {
-                name : name.to_owned(),
-            };
             self.parsed_menus.insert(name.to_owned(), menu);
         };
-
         
         self.active_menus.push(name.to_owned());
         ui_println!("Loaded menus:\n{:?}", self.active_menus);

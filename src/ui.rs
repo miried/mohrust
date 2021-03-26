@@ -1,9 +1,10 @@
 use std::sync::Mutex;
-use menu::MenuConfig;
+use menu::UrcMenus;
 use once_cell::sync::OnceCell;
 
 mod menu;
 mod urc;
+mod draw;
 
 use crate::client::cvar;
 use crate::ui_println;
@@ -11,24 +12,24 @@ use crate::ui_println;
 
 pub const UI_APIVERSION : i32 = 6;
 
-static MENUCONFIG : OnceCell<Mutex<MenuConfig>> = OnceCell::new();
+static MENUCONFIG : OnceCell<Mutex<UrcMenus>> = OnceCell::new();
 
-fn set_menuconfig(mc : MenuConfig) {
-	let result = MENUCONFIG.set(Mutex::new(mc));
-	result.expect("Could not initialize MENUCONFIG, already done before.");
-	// TODO: this crashes on vid_restart. we need a proper shutdown sequence, to gracefully handle a restart.
+fn set_menuconfig(mc : UrcMenus) {
+	let _result = MENUCONFIG.set(Mutex::new(mc));
+	//result.expect("Could not initialize MENUCONFIG, already done before.");
 }
 
 pub fn init(_in_game_load : bool) -> i32 {
 	cvar::create("ui_wombat", "0", 0);
 
-	set_menuconfig(menu::MenuConfig::init());
+	set_menuconfig(menu::UrcMenus::new());
 
 	ui_println!("UI init completed.");
 	0
 }
 
 pub fn shutdown() -> i32 {
+	MENUCONFIG.get().unwrap().lock().unwrap().clear();
 	0
 }
 
