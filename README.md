@@ -3,7 +3,9 @@
 
 Rust implementations for game libraries running with ioq3.
 
-Currently in early stages, trying to figure out good ways for Rust to interface with unsafe C code.
+Currently, only supporting the UI lib.
+
+![Screenshot](openmohaa.png)
 
 ## Getting Started
 
@@ -41,5 +43,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* The Rust community for sharing their wisdom
-* John Carmack for his inspiration
+* The Rust community
+* John Carmack
