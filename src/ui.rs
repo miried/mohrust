@@ -1,5 +1,5 @@
 use std::sync::Mutex;
-use menu::UrcMenus;
+use menu::UrcCache;
 use once_cell::sync::OnceCell;
 
 mod menu;
@@ -12,9 +12,9 @@ use crate::ui_println;
 
 pub const UI_APIVERSION : i32 = 6;
 
-static MENUCONFIG : OnceCell<Mutex<UrcMenus>> = OnceCell::new();
+static MENUCONFIG : OnceCell<Mutex<UrcCache>> = OnceCell::new();
 
-fn set_menuconfig(mc : UrcMenus) {
+fn set_menuconfig(mc : UrcCache) {
 	let _result = MENUCONFIG.set(Mutex::new(mc));
 	//result.expect("Could not initialize MENUCONFIG, already done before.");
 }
@@ -22,7 +22,7 @@ fn set_menuconfig(mc : UrcMenus) {
 pub fn init(_in_game_load : bool) -> i32 {
 	cvar::create("ui_wombat", "0", 0);
 
-	set_menuconfig(menu::UrcMenus::new());
+	set_menuconfig(menu::UrcCache::new());
 
 	ui_println!("UI init completed.");
 	0
