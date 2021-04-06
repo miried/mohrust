@@ -20,6 +20,8 @@ pub unsafe extern "C" fn dllEntry( syscallptr : intptr_t ) {
 pub extern "C" fn vmMain( command: c_int, arg0: c_int, arg1: c_int, arg2: c_int, arg3: c_int, arg4: c_int, arg5: c_int, arg6: c_int, arg7: c_int, arg8: c_int, arg9: c_int, arg10: c_int, arg11: c_int) -> intptr_t {
 	let cmd : uiExport_t = unsafe { std::mem::transmute(command) };
 
+	//ui_println!("cmd {:?}", cmd);
+	
 	let result = match cmd {
 		uiExport_t::UI_GETAPIVERSION => ui::UI_APIVERSION,
 		uiExport_t::UI_INIT => ui::init(arg0 != 0),
@@ -27,17 +29,18 @@ pub extern "C" fn vmMain( command: c_int, arg0: c_int, arg1: c_int, arg2: c_int,
 		uiExport_t::UI_KEY_EVENT => ui::key_event(arg0, arg1 != 0),
 		uiExport_t::UI_MOUSE_EVENT => ui::mouse_event(arg0, arg1),
 		uiExport_t::UI_REFRESH => ui::refresh(arg0),
-		uiExport_t::UI_IS_FULLSCREEN => ui::is_fullscreen(),
+		uiExport_t::UI_IS_FULLSCREEN => ui::is_fullscreen() as i32,
 		uiExport_t::UI_SET_ACTIVE_MENU => ui::set_active_menu(arg0),
-		uiExport_t::UI_CONSOLE_COMMAND => ui::console_command(arg0),
+		uiExport_t::UI_CONSOLE_COMMAND => ui::console_command(arg0) as i32,
 		uiExport_t::UI_DRAW_CONNECT_SCREEN => ui::draw_connect_screen(arg0 != 0),
-		uiExport_t::UI_HASUNIQUECDKEY => ui::has_unique_cdkey(),
+		uiExport_t::UI_HASUNIQUECDKEY => ui::has_unique_cdkey() as i32,
 	};
 	result as intptr_t
 }
 
 #[allow(non_camel_case_types, dead_code)]
 #[repr(C)]
+#[derive(Debug)]
 enum uiExport_t {
 	UI_GETAPIVERSION = 0,	// system reserved
 

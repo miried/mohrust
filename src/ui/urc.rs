@@ -7,26 +7,38 @@ pub mod q3 {
     pub type _Vec3 = [f32; 3];
     pub type Vec4 = [f32; 4];
 }
+
 #[derive(Debug)]
-enum UrcProperty {
+#[derive(PartialEq)]
+pub enum UrcProperty {
     Name(String),
     Width(u32),
     Height(u32),
     PosX(u32),
     PosY(u32),
+    Fullscreen(bool),
     BgColor(q3::Vec4),
 }
+
+impl UrcProperty {
+    pub fn is_fullscreen(property : &UrcProperty) -> Option<bool> {
+        match *property {
+            UrcProperty::Fullscreen(b) => Some(b),
+            _ => None
+        }
+    }
+}
 #[derive(Debug)]
-enum UrcResourceType {
+pub enum UrcResourceType {
     Menu,
     Label,
     Button
 }
 #[derive(Debug)]
 pub struct UrcResource {
-    res_type   : UrcResourceType,
-    properties : Vec<UrcProperty>,
-    resources  : Vec<UrcResource>,
+    pub res_type   : UrcResourceType,
+    pub properties : Vec<UrcProperty>,
+    pub resources  : Vec<UrcResource>,
 }
 
 impl UrcResource {
@@ -63,6 +75,11 @@ impl UrcResource {
         self.properties.push(UrcProperty::Name(name));
         self.properties.push(UrcProperty::Width(width));
         self.properties.push(UrcProperty::Height(height));
+    }
+
+    fn fullscreen_cmd( &mut self, cmd_list : &mut SplitWhitespace ) {
+        let is_fullscreen : i32 = cmd_list.next().unwrap().parse().unwrap();
+        self.properties.push(UrcProperty::Fullscreen(is_fullscreen != 0));
     }
 
     fn bgcolor_cmd( &mut self, cmd_list : &mut SplitWhitespace ) {
@@ -110,11 +127,12 @@ impl UrcResource {
         }
     
         match cur_cmd {
-            "menu"     => self.menu_cmd(cmd_list),
-            "bgcolor"  => self.bgcolor_cmd(cmd_list),
-            "resource" => self.resource_cmd(cmd_list),
-            "name"     => self.name_cmd(cmd_list),
-            "rect"     => self.rect_cmd(cmd_list),
+            "menu"       => self.menu_cmd(cmd_list),
+            "fullscreen" => self.fullscreen_cmd(cmd_list),
+            "bgcolor"    => self.bgcolor_cmd(cmd_list),
+            "resource"   => self.resource_cmd(cmd_list),
+            "name"       => self.name_cmd(cmd_list),
+            "rect"       => self.rect_cmd(cmd_list),
             _ => ui_println!("Unknown URC command {}", cur_cmd),
         }
     }
