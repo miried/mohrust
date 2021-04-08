@@ -1,6 +1,7 @@
 use std::sync::Mutex;
-use menu::UrcCache;
+use menu::LoadedMenus;
 use once_cell::sync::OnceCell;
+//use std::sync::Arc;
 
 mod menu;
 mod urc;
@@ -9,22 +10,20 @@ mod draw;
 use crate::client as cl;
 use crate::ui_println;
 
-use self::urc::UrcProperty;
-
 
 pub const UI_APIVERSION : i32 = 6;
 
-static MENUCONFIG : OnceCell<Mutex<UrcCache>> = OnceCell::new();
+static LOADED_MENUS : OnceCell<Mutex<LoadedMenus>> = OnceCell::new();
 
-fn set_menuconfig(mc : UrcCache) {
+fn set_menuconfig(mc : LoadedMenus) {
 	let mutex = Mutex::new(mc);
-	let _ = MENUCONFIG.set(mutex);
+	let _ = LOADED_MENUS.set(mutex);
 }
 
 pub fn init(_in_game_load : bool) -> i32 {
 	cl::cvar::create("ui_wombat", "0", 0);
 
-	let mc = menu::UrcCache::new();
+	let mc = menu::LoadedMenus::new();
 	set_menuconfig(mc);
 
 	ui_println!("UI init completed.");
@@ -32,7 +31,7 @@ pub fn init(_in_game_load : bool) -> i32 {
 }
 
 pub fn shutdown() -> i32 {
-	MENUCONFIG.get()
+	LOADED_MENUS.get()
 	.expect("UI shutdown before Init.")
 	.lock()
 	.expect("UI shutdown lock could not be aquired.")
@@ -55,24 +54,22 @@ pub fn refresh(_realtime : i32) -> i32 {
 	}
 
 	let menu_config =
-		MENUCONFIG.get()
+		LOADED_MENUS.get()
 		.expect("UI Refresh before Init.")
 		.lock()
 		.expect("UI Refresh lock could not be aquired.");
 
-	let _a =
-		menu_config
+	menu_config
 		.get_stack()
 		.iter()
-		.map(|_x| ui_println!("a"));
+		.for_each(|m| draw::draw_menu(m));
 
-	//ui_println!("{:?}", a);
 	0
 }
 
 pub fn is_fullscreen() -> bool {
 	let menu_config =
-		MENUCONFIG.get()
+		LOADED_MENUS.get()
 		.expect("UI is_fullscreen before Init.")
 		.lock()
 		.expect("UI is_fullscreen lock could not be aquired.");
@@ -81,8 +78,7 @@ pub fn is_fullscreen() -> bool {
 
 	let top_menu_fullscreen =
 		top_menu.filter(|_|cl::key::is_catch_ui())
-		.map(|m|m.properties.iter().find_map(UrcProperty::is_fullscreen))
-		.flatten()
+		.map(|m|m.fullscreen)
 		.unwrap_or(false);
 
 	top_menu_fullscreen
@@ -104,7 +100,13 @@ pub fn set_active_menu(menu : i32) -> i32 {
 	let menu_command : uiMenuCommand_t = unsafe { std::mem::transmute(menu) };
 	match menu_command {
 		uiMenuCommand_t::UIMENU_NONE => (),
-		uiMenuCommand_t::UIMENU_MAIN => MENUCONFIG.get().unwrap().lock().unwrap().set_main_menu(),
+		uiMenuCommand_t::UIMENU_MAIN => {
+			let mut menu_config =
+				LOADED_MENUS.get()
+				.expect("UI set_active_menu before Init.")
+				.lock()
+				.expect("UI set_active_menu lock could not be aquired.");
+			menu_config.set_main_menu()},
 		_ => ()
 	}
 	0

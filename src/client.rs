@@ -1,6 +1,7 @@
 pub mod cvar;
 pub mod fs;
 pub mod key;
+pub mod render;
 pub mod util;
 
 use libc::intptr_t;
@@ -45,6 +46,13 @@ pub fn create_cstring(input : &str) -> CString {
     CString::new(input).expect("Could not convert text to CString.")
 }
 
+#[repr(C)]
+#[allow(dead_code)]
+union floatint_t {
+    f: f32,
+    i: i32,
+    ui: u32
+}
 
 #[repr(C)]
 #[allow(non_camel_case_types, dead_code)]

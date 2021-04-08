@@ -4,14 +4,6 @@ use std::ffi::CStr;
 
 use cl::uiImport_t;
 
-#[repr(C)]
-#[allow(dead_code)]
-union floatint_t {
-    f: f32,
-    i: i32,
-    ui: u32
-}
-
 pub fn _set(var_name : &str, value : &str) {
     let c_var_name = cl::create_cstring(var_name);
     let c_value = cl::create_cstring(value);
@@ -27,7 +19,7 @@ pub fn create(var_name : &str, value : &str, flags : i32) {
 pub fn _variable_value(var_name : &str) -> f32 {
     let c_var_name = cl::create_cstring(var_name);
     let value = unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_SET as intptr_t, c_var_name.as_ptr())};
-    let fi = floatint_t { i : value as i32 };
+    let fi = cl::floatint_t { i : value as i32 };
     unsafe{ fi.f }
 }
 

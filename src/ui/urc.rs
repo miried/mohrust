@@ -1,4 +1,5 @@
 use std::str::SplitWhitespace;
+use crate::client as cl;
 
 use crate::ui_println;
 
@@ -7,7 +8,135 @@ pub mod q3 {
     pub type _Vec3 = [f32; 3];
     pub type Vec4 = [f32; 4];
 }
+#[derive(Debug)]
+#[derive(Default)]
+pub struct Menu {
+    name : String,
+    width : u32,
+    height : u32,
+    pub fullscreen : bool,
+    pub resources : Vec<Resource>,
+}
 
+impl Menu {
+
+    pub fn parse( urc_string : &str ) -> Self {
+        let mut commands =
+            urc_string
+            .split(&['\r','\n'][..])
+            .filter(|s| !s.is_empty())
+            .filter(|s| !s.starts_with("//"));
+
+        let mut menu = Self::default();
+    
+        while let Some(cmd_line) = commands.next() {
+
+            let mut args = cmd_line.split_whitespace();
+
+            if let Some(command) = args.next(){
+                menu.parse_command(command, args, &mut commands);
+            }
+        }
+    
+        menu
+    }
+
+    fn parse_menu_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { self.name = s.trim_matches('"').to_owned() }
+        if let Some(s) = args.next() { if let Ok(x) = s.parse() { self.width = x } }
+        if let Some(s) = args.next() { if let Ok(x) = s.parse() { self.height = x } }
+    }
+
+    fn parse_fullscreen_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { if let Ok(x) = s.parse::<i32>() { self.fullscreen = x != 0 } }
+    }
+
+    fn parse_resource_command<'a, T: Iterator<Item = &'a str>>(&mut self, commands : &mut T) {
+        let resource = 
+            match commands.next() {
+                Some("Label") => Some(Resource::Label(Label::parse(commands))),
+                Some("Button") => Some(Resource::Button),
+                Some(r) => {ui_println!("Unknown resource type: {}", r); None},
+                None => None,
+            };
+        
+        if let Some(r) = resource {
+            self.resources.push(r);
+        }
+    }
+
+    fn parse_command<'a, T: Iterator<Item = &'a str>>(&mut self, command : &str, args : SplitWhitespace, commands : &mut T) {
+        match command {
+            "menu"       => self.parse_menu_command(args),
+            "fullscreen" => self.parse_fullscreen_command(args),
+            "resource"   => self.parse_resource_command(commands),
+            _ => ui_println!("Unknown URC command {}", command),
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct Label {
+    name : String,
+    pub rect : q3::Vec4,
+    pub shader : cl::render::Shader,
+}
+
+impl Label {
+    pub fn parse<'a, T: Iterator<Item = &'a str>>( commands : &mut T ) -> Label {
+        let mut label = Label::default();
+
+        if commands.next() != Some("{") {
+            return label
+        }
+    
+        while let Some(cmd_line) = commands.next() {
+
+            if cmd_line == "}" {
+                break
+            }
+
+            let mut args = cmd_line.split_whitespace();
+
+            if let Some(command) = args.next(){
+                label.parse_command(command, args);
+            }
+        }
+        label
+    }
+
+    fn parse_command(&mut self, command : &str, args : SplitWhitespace) {
+        match command {
+            "name"       => self.parse_name_command(args),
+            "shader"     => self.parse_shader_command(args),
+            "rect"       => self.parse_rect_command(args),
+            _ => ui_println!("Unknown URC command {}", command),
+        }
+    }
+
+    fn parse_name_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { self.name = s.trim_matches('"').to_owned() }
+    }
+
+    fn parse_shader_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { self.shader = cl::render::Shader::register(s.trim_matches('"')) }
+    }
+
+    fn parse_rect_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { if let Ok(x) = s.parse() { self.rect[0] = x } };
+        if let Some(s) = args.next() { if let Ok(x) = s.parse() { self.rect[1] = x } };
+        if let Some(s) = args.next() { if let Ok(x) = s.parse() { self.rect[2] = x } };
+        if let Some(s) = args.next() { if let Ok(x) = s.parse() { self.rect[3] = x } };
+    }
+}
+
+#[derive(Debug)]
+pub enum Resource {
+    Label(Label),
+    Button,
+}
+
+/*
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum UrcProperty {
@@ -156,3 +285,4 @@ impl UrcResource {
         menu
     }
 }
+*/

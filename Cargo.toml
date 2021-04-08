@@ -13,5 +13,5 @@ libc = "*"
 bitflags = "*"
 once_cell = "*"
 
-[profile]
-#split-debuginfo = "unpacked"
+[profile.dev]
+split-debuginfo = "unpacked"
