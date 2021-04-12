@@ -1,7 +1,6 @@
 use std::sync::Mutex;
 use menu::LoadedMenus;
 use once_cell::sync::OnceCell;
-//use std::sync::Arc;
 
 mod menu;
 mod urc;

@@ -5,6 +5,8 @@ extern crate bitflags;
 
 mod client;
 mod ui;
+mod widget;
+mod q3common;
 
 /// When loading the library, the engine will first call dllEntry
 /// So that we know the syscallptr to call functions from the library.

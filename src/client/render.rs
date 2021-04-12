@@ -12,6 +12,7 @@ pub struct Shader {
 impl Shader {
     pub fn register( name : &str ) -> Self {
         let h = unsafe{register_shader_nomip(name)};
+        
         Shader {
             name : name.to_owned(),
             handle : h,

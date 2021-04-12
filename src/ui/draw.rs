@@ -1,10 +1,10 @@
-use super::urc::{Menu, Resource};
-//use crate::client as cl;
+use super::urc::{Menu};
+use crate::widget::{Draw, WidgetType};
 
-fn draw_resource( r : &Resource ) {
+fn draw_resource( r : &WidgetType ) {
 
     match r {
-        Resource::Label(l) => l.shader.draw(l.rect[0], l.rect[1], l.rect[2], l.rect[3]),
+        WidgetType::Label(l) => l.draw(),
         _ => {}
     }
 }
