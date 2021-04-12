@@ -4,7 +4,6 @@ use once_cell::sync::OnceCell;
 
 mod menu;
 mod urc;
-mod draw;
 
 use crate::client as cl;
 use crate::ui_println;
@@ -13,6 +12,10 @@ use crate::ui_println;
 pub const UI_APIVERSION : i32 = 6;
 
 static LOADED_MENUS : OnceCell<Mutex<LoadedMenus>> = OnceCell::new();
+
+pub trait Draw {
+    fn draw(&self);
+}
 
 fn set_menuconfig(mc : LoadedMenus) {
 	let mutex = Mutex::new(mc);
@@ -61,7 +64,7 @@ pub fn refresh(_realtime : i32) -> i32 {
 	menu_config
 		.get_stack()
 		.iter()
-		.for_each(|m| draw::draw_menu(m));
+		.for_each(|m| m.draw());
 
 	0
 }
@@ -77,7 +80,7 @@ pub fn is_fullscreen() -> bool {
 
 	let top_menu_fullscreen =
 		top_menu.filter(|_|cl::key::is_catch_ui())
-		.map(|m|m.fullscreen)
+		.map(|m|m.is_fullscreen())
 		.unwrap_or(false);
 
 	top_menu_fullscreen

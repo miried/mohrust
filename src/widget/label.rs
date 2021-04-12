@@ -2,7 +2,7 @@ use crate::client as cl;
 use std::str::SplitWhitespace;
 use crate::ui_println;
 
-use super::Draw;
+use crate::ui::Draw;
 #[derive(Debug, Default)]
 pub struct Label {
     name : String,

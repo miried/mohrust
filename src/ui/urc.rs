@@ -3,17 +3,29 @@ use std::str::SplitWhitespace;
 use crate::widget;
 use crate::ui_println;
 
+use crate::ui::Draw;
+
 #[derive(Debug)]
 #[derive(Default)]
 pub struct Menu {
     name : String,
     width : u32,
     height : u32,
-    pub fullscreen : bool,
-    pub resources : Vec<widget::WidgetType>,
+    fullscreen : bool,
+    resources : Vec<widget::WidgetType>,
+}
+
+impl Draw for Menu{
+    fn draw(&self) {
+        self.resources.iter().for_each(|r|r.draw());
+    }
 }
 
 impl Menu {
+
+    pub fn is_fullscreen(&self) -> bool {
+        self.fullscreen
+    }
 
     pub fn parse( urc_string : &str ) -> Self {
         let mut commands =
