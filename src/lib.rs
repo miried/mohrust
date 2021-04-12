@@ -4,8 +4,8 @@ use libc::{c_int, intptr_t};
 extern crate bitflags;
 
 mod client;
-mod ui;
-mod widget;
+mod q3ui;
+mod menu;
 mod q3common;
 
 /// When loading the library, the engine will first call dllEntry
@@ -25,17 +25,17 @@ pub extern "C" fn vmMain( command: c_int, arg0: c_int, arg1: c_int, arg2: c_int,
 	//ui_println!("cmd {:?}", cmd);
 	
 	let result = match cmd {
-		uiExport_t::UI_GETAPIVERSION => ui::UI_APIVERSION,
-		uiExport_t::UI_INIT => ui::init(arg0 != 0),
-		uiExport_t::UI_SHUTDOWN => ui::shutdown(),
-		uiExport_t::UI_KEY_EVENT => ui::key_event(arg0, arg1 != 0),
-		uiExport_t::UI_MOUSE_EVENT => ui::mouse_event(arg0, arg1),
-		uiExport_t::UI_REFRESH => ui::refresh(arg0),
-		uiExport_t::UI_IS_FULLSCREEN => ui::is_fullscreen() as i32,
-		uiExport_t::UI_SET_ACTIVE_MENU => ui::set_active_menu(arg0),
-		uiExport_t::UI_CONSOLE_COMMAND => ui::console_command(arg0) as i32,
-		uiExport_t::UI_DRAW_CONNECT_SCREEN => ui::draw_connect_screen(arg0 != 0),
-		uiExport_t::UI_HASUNIQUECDKEY => ui::has_unique_cdkey() as i32,
+		uiExport_t::UI_GETAPIVERSION => q3ui::UI_APIVERSION,
+		uiExport_t::UI_INIT => q3ui::init(arg0 != 0),
+		uiExport_t::UI_SHUTDOWN => q3ui::shutdown(),
+		uiExport_t::UI_KEY_EVENT => q3ui::key_event(arg0, arg1 != 0),
+		uiExport_t::UI_MOUSE_EVENT => q3ui::mouse_event(arg0, arg1),
+		uiExport_t::UI_REFRESH => q3ui::refresh(arg0),
+		uiExport_t::UI_IS_FULLSCREEN => q3ui::is_fullscreen() as i32,
+		uiExport_t::UI_SET_ACTIVE_MENU => q3ui::set_active_menu(arg0),
+		uiExport_t::UI_CONSOLE_COMMAND => q3ui::console_command(arg0) as i32,
+		uiExport_t::UI_DRAW_CONNECT_SCREEN => q3ui::draw_connect_screen(arg0 != 0),
+		uiExport_t::UI_HASUNIQUECDKEY => q3ui::has_unique_cdkey() as i32,
 	};
 	result as intptr_t
 }

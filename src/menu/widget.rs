@@ -1,6 +1,6 @@
 pub mod label;
 
-use crate::ui::Draw;
+use crate::q3ui::Draw;
 #[derive(Debug)]
 pub enum WidgetType {
     Label(label::Label),

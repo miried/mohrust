@@ -4,7 +4,8 @@ use std::sync::Arc;
 use crate::ui_println;
 use crate::client as cl;
 
-use super::urc;
+mod urc;
+mod widget;
 
 #[derive(Debug)]
 pub struct LoadedMenus {

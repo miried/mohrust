@@ -1,9 +1,6 @@
 use std::sync::Mutex;
-use menu::LoadedMenus;
+use crate::menu::LoadedMenus;
 use once_cell::sync::OnceCell;
-
-mod menu;
-mod urc;
 
 use crate::client as cl;
 use crate::ui_println;
@@ -25,7 +22,7 @@ fn set_menuconfig(mc : LoadedMenus) {
 pub fn init(_in_game_load : bool) -> i32 {
 	cl::cvar::create("ui_wombat", "0", 0);
 
-	let mc = menu::LoadedMenus::new();
+	let mc = LoadedMenus::new();
 	set_menuconfig(mc);
 
 	ui_println!("UI init completed.");

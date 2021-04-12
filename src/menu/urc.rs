@@ -1,9 +1,9 @@
 use std::str::SplitWhitespace;
 
-use crate::widget;
+use super::widget;
 use crate::ui_println;
 
-use crate::ui::Draw;
+use crate::q3ui::Draw;
 
 #[derive(Debug)]
 #[derive(Default)]
