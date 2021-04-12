@@ -3,7 +3,7 @@ use std::str::SplitWhitespace;
 use super::widget;
 use crate::ui_println;
 
-use crate::q3ui::Draw;
+use crate::menu::Draw;
 
 #[derive(Debug)]
 #[derive(Default)]
@@ -12,10 +12,10 @@ pub struct Menu {
     width : u32,
     height : u32,
     fullscreen : bool,
-    resources : Vec<widget::WidgetType>,
+    resources : Vec<widget::Widget>,
 }
 
-impl Draw for Menu{
+impl Draw for Menu {
     fn draw(&self) {
         self.resources.iter().for_each(|r|r.draw());
     }
@@ -59,15 +59,9 @@ impl Menu {
     }
 
     fn parse_resource_command<'a, T: Iterator<Item = &'a str>>(&mut self, commands : &mut T) {
-        let resource = 
-            match commands.next() {
-                Some("Label") => Some(widget::WidgetType::Label(widget::label::Label::parse(commands))),
-                Some("Button") => Some(widget::WidgetType::Button),
-                Some(r) => {ui_println!("Unknown resource type: {}", r); None},
-                None => None,
-            };
+        let widget = widget::Widget::parse(commands);
         
-        if let Some(r) = resource {
+        if let Some(r) = widget {
             self.resources.push(r);
         }
     }
@@ -77,6 +71,7 @@ impl Menu {
             "menu"       => self.parse_menu_command(args),
             "fullscreen" => self.parse_fullscreen_command(args),
             "resource"   => self.parse_resource_command(commands),
+            "bgfill" | "bgcolor" | "borderstyle" | "virtualres" | "end." => {}, // TODO
             _ => ui_println!("Unknown URC command {}", command),
         }
     }

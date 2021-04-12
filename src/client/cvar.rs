@@ -18,7 +18,7 @@ pub fn create(var_name : &str, value : &str, flags : i32) {
 
 pub fn _variable_value(var_name : &str) -> f32 {
     let c_var_name = cl::create_cstring(var_name);
-    let value = unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_SET as intptr_t, c_var_name.as_ptr())};
+    let value = unsafe{cl::SYSCALL(uiImport_t::UI_CVAR_VARIABLEVALUE as intptr_t, c_var_name.as_ptr())};
     let fi = cl::floatint_t { i : value as i32 };
     unsafe{ fi.f }
 }

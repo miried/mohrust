@@ -4,35 +4,30 @@ use crate::ui_println;
 
 use crate::menu::Draw;
 #[derive(Debug, Default)]
-pub struct Label {
+pub struct Button {
     name : String,
     rect : [i32; 4],
     shader : cl::render::Shader,
+    hover_shader : cl::render::Shader,
+    stuffcommand : String,
+    hovercommand : Option<String>,
+    clicksound : String,
     enabled_cvar : Option<String>,
-    linkcvartoshader : bool,
-    linkcvar : String,
 }
 
 
-impl Draw for Label {
+impl Draw for Button {
     fn draw(&self) {
         if self.enabled_cvar.is_some() {
             // TODO: check the cvar here. For now, we just don't draw.
             return
         }
 
-        if self.linkcvartoshader {
-            // TODO: we need to improve the cvar code so that we don't register the shader all the time.
-            //let s = cl::cvar::_variable_string_buffer(&self.linkcvar);
-            //cl::render::Shader::register(&s).draw(self.rect[0], self.rect[1], self.rect[2], self.rect[3]);
-        }
-        else {
-            self.shader.draw(self.rect[0], self.rect[1], self.rect[2], self.rect[3]);
-        }
+        self.shader.draw(self.rect[0], self.rect[1], self.rect[2], self.rect[3]);
     }
 }
 
-impl Label {
+impl Button {
     pub fn parse<'a, T: Iterator<Item = &'a str>>( commands : &mut T ) -> Self {
         let mut label = Self::default();
 
@@ -59,10 +54,12 @@ impl Label {
         match command {
             "name"       => self.parse_name_command(args),
             "shader"     => self.parse_shader_command(args),
+            "hovershader"     => self.parse_hovershader_command(args),
             "rect"       => self.parse_rect_command(args),
+            "stuffcommand" => self.parse_stuffcommand_command(args),
+            "hovercommand" => self.parse_hovercommand_command(args),
             "enabledcvar" => self.parse_enabledcvar_command(args),
-            "linkcvartoshader" => self.linkcvartoshader = true,
-            "linkcvar" => self.parse_linkcvar_command(args),
+            "clicksound" => self.parse_clicksound_command(args),
             "fgcolor" | "bgcolor" | "borderstyle" => {}, // TODO
             _ => ui_println!("Unknown URC command {}", command),
         }
@@ -76,12 +73,24 @@ impl Label {
         if let Some(s) = args.next() { let s = s.trim_matches('"').to_owned(); self.enabled_cvar=Some(s) }
     }
 
+    fn parse_hovercommand_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { let s = s.trim_matches('"').to_owned(); self.hovercommand=Some(s) }
+    }
+
     fn parse_shader_command(&mut self, mut args : SplitWhitespace) {
         if let Some(s) = args.next() { self.shader = cl::render::Shader::register(s.trim_matches('"')) }
     }
 
-    fn parse_linkcvar_command(&mut self, mut args : SplitWhitespace) {
-        if let Some(s) = args.next() { self.linkcvar = s.trim_matches('"').to_owned() }
+    fn parse_hovershader_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { self.hover_shader = cl::render::Shader::register(s.trim_matches('"')) }
+    }
+
+    fn parse_stuffcommand_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { self.stuffcommand = s.trim_matches('"').to_owned() }
+    }
+
+    fn parse_clicksound_command(&mut self, mut args : SplitWhitespace) {
+        if let Some(s) = args.next() { self.clicksound = s.trim_matches('"').to_owned() }
     }
 
     fn parse_rect_command(&mut self, mut args : SplitWhitespace) {

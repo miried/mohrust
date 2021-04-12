@@ -19,8 +19,8 @@ impl Shader {
         }
     }
 
-    pub fn draw(&self, x : f32, y : f32, w : f32, h : f32) {
-        unsafe{draw_stretch_pic(x, y, w, h, 0.0, 0.0, 1.0, 1.0, self.handle)}
+    pub fn draw(&self, x : i32, y : i32, w : i32, h : i32) {
+        unsafe{draw_stretch_pic(x as f32, y as f32, w as f32, h as f32, 0.0, 0.0, 1.0, 1.0, self.handle)}
     }
 }
 

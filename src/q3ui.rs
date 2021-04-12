@@ -4,15 +4,11 @@ use once_cell::sync::OnceCell;
 
 use crate::client as cl;
 use crate::ui_println;
-
+use crate::menu::Draw;
 
 pub const UI_APIVERSION : i32 = 6;
 
 static LOADED_MENUS : OnceCell<Mutex<LoadedMenus>> = OnceCell::new();
-
-pub trait Draw {
-    fn draw(&self);
-}
 
 fn set_menuconfig(mc : LoadedMenus) {
 	let mutex = Mutex::new(mc);
@@ -38,11 +34,25 @@ pub fn shutdown() -> i32 {
 	0
 }
 
-pub fn key_event(_key : i32, _down : bool) -> i32 {
+pub fn key_event(key : i32, down : bool) -> i32 {
+
+	LOADED_MENUS.get()
+		.expect("UI Refresh before Init.")
+		.lock()
+		.expect("UI Refresh lock could not be aquired.")
+		.key_event(key, down);
+
 	0
 }
 
-pub fn mouse_event(_x : i32, _y : i32) -> i32 {
+pub fn mouse_event(dx : i32, dy : i32) -> i32 {
+
+	LOADED_MENUS.get()
+		.expect("UI Refresh before Init.")
+		.lock()
+		.expect("UI Refresh lock could not be aquired.")
+		.mouse_event(dx, dy);
+
 	0
 }
 
@@ -58,10 +68,7 @@ pub fn refresh(_realtime : i32) -> i32 {
 		.lock()
 		.expect("UI Refresh lock could not be aquired.");
 
-	menu_config
-		.get_stack()
-		.iter()
-		.for_each(|m| m.draw());
+	menu_config.draw();
 
 	0
 }
@@ -73,14 +80,7 @@ pub fn is_fullscreen() -> bool {
 		.lock()
 		.expect("UI is_fullscreen lock could not be aquired.");
 
-	let top_menu = menu_config.get_stack().last();
-
-	let top_menu_fullscreen =
-		top_menu.filter(|_|cl::key::is_catch_ui())
-		.map(|m|m.is_fullscreen())
-		.unwrap_or(false);
-
-	top_menu_fullscreen
+	menu_config.is_fullscreen()
 }
 
 #[allow(non_camel_case_types, dead_code)]
