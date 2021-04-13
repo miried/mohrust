@@ -5,6 +5,7 @@ use crate::ui_println;
 use crate::client as cl;
 
 use cl::render::Shader;
+use cl::key::KeyNum;
 
 mod urc;
 mod widget;
@@ -67,11 +68,32 @@ impl LoadedMenus {
         top_menu_fullscreen
     }
 
-    pub fn key_event(&self, key : i32, down : bool) {
-        ui_println!("key {} down: {}.", key, down);
+    pub fn key_event(&mut self, keycode : i32, down : bool) {
+
+        if self.stack.is_empty() {
+            return
+        }
+
+        let key : KeyNum = unsafe { std::mem::transmute(keycode) };
+
+        if !down {
+            return
+        }
+
+        match key {
+            KeyNum::K_ESCAPE => self.pop_menu(),
+            KeyNum::K_MOUSE1 => self.mouse_clicked(),
+            _ => {},
+        }
     }
 
-    pub fn mouse_event(&mut self, dx: i32, dy : i32 ) {
+    fn mouse_clicked(&self) {
+        if let Some(m) = self.stack.last() {
+            m.mouse_click();
+        }
+    }
+
+    pub fn mouse_moved(&mut self, dx: i32, dy : i32 ) {
 
         if self.stack.is_empty() {
             return
@@ -80,15 +102,25 @@ impl LoadedMenus {
         self.cursor_posx = clamp_pos(self.cursor_posx, dx);
         self.cursor_posy = clamp_pos(self.cursor_posy, dy);
 
+        if let Some(m) = self.stack.last() {
+            m.mouse_move(self.cursor_posx, self.cursor_posy);
+        }
     }
 
-    fn load_menu(name : &str) -> Arc<urc::Menu> {
+    fn load_menu(name : &str) -> Option<Arc<urc::Menu>> {
         let filename   = format!("ui/{}.urc", name);
-        let file   = cl::fs::FileHandle::try_from(&filename).unwrap();
-        let urc_string = file.read_text();
+        match cl::fs::FileHandle::try_from(&filename) {
+            Ok(file) => {
+                let urc_string = file.read_text();
 
-        let menu = urc::Menu::parse( &urc_string );
-        Arc::new(menu)
+                let menu = urc::Menu::parse( &urc_string );
+                Some(Arc::new(menu))
+            },
+            Err(_) => {
+                ui_println!("Menu not found: {}", filename);
+                None
+            }
+        }
     }
     
     pub fn push_menu(&mut self, name : &str) {
@@ -96,23 +128,28 @@ impl LoadedMenus {
             self.cache
             .get(name)
             .map(Arc::clone).
-            unwrap_or_else(|| {
-            let arc_menu = LoadedMenus::load_menu(name);
-            let arc_clone = Arc::clone(&arc_menu);
-            self.cache.insert(name.to_owned(), arc_clone);
-            arc_menu
-        });
+            or_else(|| {
+                LoadedMenus::load_menu(name).map(|arc_menu| {
+                    let arc_clone = Arc::clone(&arc_menu);
+                    self.cache.insert(name.to_owned(), arc_clone);
+                    arc_menu
+                })
+            });
         
-        self.stack.push(from_cache);
-        cl::key::catch_ui();
-        if false {
-            ui_println!("Loaded menus:\n{:?}", self.stack);
+        if let Some(m) = from_cache {
+            self.stack.push(m);
+            cl::key::catch_ui();
         }
+    }
+
+    pub fn pop_menu(&mut self) {
+        self.stack.pop();
     }
     
     pub fn set_main_menu(&mut self) {
         if self.stack.is_empty() {
             self.push_menu("main");
+            ui_println!("start with main");
         }
     }    
 }

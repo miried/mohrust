@@ -28,6 +28,11 @@ impl Draw for Button {
 }
 
 impl Button {
+
+    pub fn mouse_click(&self) {
+        cl::util::cmd_execute(&self.stuffcommand)
+    }
+
     pub fn parse<'a, T: Iterator<Item = &'a str>>( commands : &mut T ) -> Self {
         let mut label = Self::default();
 

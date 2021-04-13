@@ -27,6 +27,18 @@ impl Menu {
         self.fullscreen
     }
 
+    pub fn mouse_click(&self) {
+        for w in &self.resources {
+            w.mouse_click()
+        }
+    }
+
+    pub fn mouse_move(&self, x : i32, y : i32) {
+        for w in &self.resources {
+            w.mouse_move(x, y)
+        }
+    }
+
     pub fn parse( urc_string : &str ) -> Self {
         let mut commands =
             urc_string

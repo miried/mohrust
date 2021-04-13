@@ -5,6 +5,7 @@ use once_cell::sync::OnceCell;
 use crate::client as cl;
 use crate::ui_println;
 use crate::menu::Draw;
+use crate::console;
 
 pub const UI_APIVERSION : i32 = 6;
 
@@ -51,7 +52,7 @@ pub fn mouse_event(dx : i32, dy : i32) -> i32 {
 		.expect("UI Refresh before Init.")
 		.lock()
 		.expect("UI Refresh lock could not be aquired.")
-		.mouse_event(dx, dy);
+		.mouse_moved(dx, dy);
 
 	0
 }
@@ -112,7 +113,20 @@ pub fn set_active_menu(menu : i32) -> i32 {
 }
 
 pub fn console_command(_realtime : i32) -> bool {
-	false
+
+	let mut menu_config =
+				LOADED_MENUS.get()
+				.expect("UI console_command before Init.")
+				.lock()
+				.expect("UI console_command lock could not be aquired.");
+
+	let command = cl::util::argv(0);
+
+	match command.as_str() {
+		"pushmenu" => console::cmd_pushmenu(&mut menu_config),
+		"popmenu"  => console::cmd_popmenu(&mut menu_config),
+		_ => false
+	}
 }
 
 pub fn draw_connect_screen(_overlay : bool) -> i32 {

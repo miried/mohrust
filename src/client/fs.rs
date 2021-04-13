@@ -1,13 +1,13 @@
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
-use crate::client as cl;
+use crate::{client as cl};
 use libc::intptr_t;
 
 use cl::uiImport_t;
 
 pub struct FileHandle {
     file_handle : fileHandle_t,
-    length : usize,
+    length : isize,
 }
 
 impl TryFrom<&String> for FileHandle {
@@ -16,6 +16,11 @@ impl TryFrom<&String> for FileHandle {
     fn try_from(value : &String) -> Result<Self, Self::Error> {
         let mut file_handle : fileHandle_t = 0;
         let length = cl_fopen_file(value, &mut file_handle, fsMode_t::FS_READ);
+        
+        if length < 0 {
+            return Err("Could not open file.")
+        }
+
         match file_handle {
             0 => Err("Could not open file."),
             _ => {
@@ -37,7 +42,7 @@ impl Drop for FileHandle {
 
 impl FileHandle {
     pub fn read(&self) -> Vec<u8> {
-        cl_read(self.length, self.file_handle)
+        cl_read(self.length as usize, self.file_handle)
     }
 
     pub fn read_text(&self) -> String {
@@ -66,10 +71,10 @@ enum fsOrigin_t {
     FS_SEEK_SET
 }
 
-fn cl_fopen_file(qpath : &str, f : &mut fileHandle_t, mode : fsMode_t) -> usize {  
+fn cl_fopen_file(qpath : &str, f : &mut fileHandle_t, mode : fsMode_t) -> isize {  
     let c_qpath = cl::create_cstring(qpath);
     let length = unsafe{cl::SYSCALL(uiImport_t::UI_FS_FOPENFILE as intptr_t, c_qpath.as_ptr(), f, mode)};
-    length.try_into().expect("Returned file length negative.")
+    length
 }
 
 fn cl_fclose_file(f : fileHandle_t) {
