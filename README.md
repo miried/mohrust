@@ -5,7 +5,7 @@ Rust implementations for game libraries running with ioq3.
 
 Currently, only supporting the UI lib.
 
-![Screenshot](openmohaa.png)
+![Screenshot](screenshot/openmohaa.png)
 
 ## Getting Started
 
