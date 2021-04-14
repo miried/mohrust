@@ -149,7 +149,6 @@ impl LoadedMenus {
     pub fn set_main_menu(&mut self) {
         if self.stack.is_empty() {
             self.push_menu("main");
-            ui_println!("start with main");
         }
     }    
 }

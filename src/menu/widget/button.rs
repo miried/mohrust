@@ -11,17 +11,16 @@ pub struct Button {
     hover_shader : cl::render::Shader,
     stuffcommand : String,
     hovercommand : Option<String>,
-    clicksound : String,
+    clicksound : Option<String>,
     enabled_cvar : Option<String>,
 }
 
 
 impl Draw for Button {
     fn draw(&self) {
-        if self.enabled_cvar.is_some() {
-            // TODO: check the cvar here. For now, we just don't draw.
-            return
-        }
+        self.enabled_cvar.as_ref().map(|s| {
+            if cl::cvar::value_float(&s) == 0.0 {return}
+        });
 
         self.shader.draw(self.rect[0], self.rect[1], self.rect[2], self.rect[3]);
     }
@@ -75,7 +74,10 @@ impl Button {
     }
 
     fn parse_enabledcvar_command(&mut self, mut args : SplitWhitespace) {
-        if let Some(s) = args.next() { let s = s.trim_matches('"').to_owned(); self.enabled_cvar=Some(s) }
+        if let Some(s) = args.next() {
+            let s = s.trim_matches('"').to_owned();
+            self.enabled_cvar=Some(s)
+        }
     }
 
     fn parse_hovercommand_command(&mut self, mut args : SplitWhitespace) {
@@ -95,7 +97,10 @@ impl Button {
     }
 
     fn parse_clicksound_command(&mut self, mut args : SplitWhitespace) {
-        if let Some(s) = args.next() { self.clicksound = s.trim_matches('"').to_owned() }
+        if let Some(s) = args.next() {
+            let string = s.trim_matches('"').to_owned();
+            self.clicksound = Some(string)
+        }
     }
 
     fn parse_rect_command(&mut self, mut args : SplitWhitespace) {

@@ -17,7 +17,9 @@ pub struct Menu {
 
 impl Draw for Menu {
     fn draw(&self) {
-        self.resources.iter().for_each(|r|r.draw());
+        self.resources
+            .iter()
+            .for_each(|r|r.draw());
     }
 }
 
@@ -28,9 +30,10 @@ impl Menu {
     }
 
     pub fn mouse_click(&self) {
-        for w in &self.resources {
-            w.mouse_click()
-        }
+        self.resources
+            .iter()
+            .filter(|w|w.is_active())
+            .for_each(|w|w.mouse_click())
     }
 
     pub fn mouse_move(&self, x : i32, y : i32) {

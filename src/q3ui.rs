@@ -17,7 +17,6 @@ fn set_menuconfig(mc : LoadedMenus) {
 }
 
 pub fn init(_in_game_load : bool) -> i32 {
-	cl::cvar::create("ui_wombat", "0", 0);
 
 	let mc = LoadedMenus::new();
 	set_menuconfig(mc);

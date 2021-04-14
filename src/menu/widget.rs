@@ -29,18 +29,18 @@ impl Draw for Widget {
 
 impl Widget {
 
-    pub fn mouse_click(&self) {
-        if !self.active {
-            return;
-        }
+    pub fn is_active(&self) -> bool {
+        self.active
+    }
 
+    pub fn mouse_click(&self) {
         match &self.widget {
             WidgetType::Button(b) => b.mouse_click(),
             _ => {},
         }
     }
 
-    pub fn mouse_move(&self, _x : i32, _y : i32) {
+    pub fn mouse_move(&self, _cursorx : i32, _cursory : i32) {
 
     }
 
